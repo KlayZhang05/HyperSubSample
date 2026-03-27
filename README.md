@@ -53,6 +53,7 @@
 hyperedge_prediction/
 ├── main.py
 ├── parallel_subgraph_trainer.py
+├── setup_native_extensions.py
 ├── training_pipeline.py
 ├── end_to_end_model.py
 ├── modified_hypergcn.py
@@ -71,6 +72,9 @@ hyperedge_prediction/
 
 - `parallel_subgraph_trainer.py`
   可选并行子图训练入口。在 `subgraph` 模式下，当并行子图数量大于 1 时使用，用于并行执行同一轮中的多个子图局部训练并完成参数聚合。
+
+- `setup_native_extensions.py`
+  用于编译可选的 C++ 扩展模块。扩展编译完成后，子图采样与子图样本筛选会优先使用 native 实现。
 
 - `training_pipeline.py`
   训练主流程所在文件，包括数据加载、负采样、验证、测试、日志记录以及完整图训练 / 子图训练的组织逻辑。
@@ -102,6 +106,14 @@ pip install -r requirements.txt
 ```
 
 如果需要在 GPU 上训练，建议先根据本机 CUDA 环境单独安装合适版本的 PyTorch，再补装其余依赖。
+
+如果希望在 CPU 并行子图训练时尽量减少 Python 解释器和 GIL 带来的影响，可以额外编译仓库中的 native 扩展：
+
+```bash
+python setup_native_extensions.py build_ext --inplace
+```
+
+编译成功后，`subgraph_sampler.py` 会自动优先调用 `subgraph_sampler_native`，无需额外修改训练命令。
 
 ## 五、数据说明
 
@@ -239,6 +251,8 @@ python main.py \
 
 - 并行子图训练仅在 CPU 模式下启用，原因是同一进程内多个子图模型同时占用单张 GPU 容易产生资源竞争
 - 当设置 `--parallel_subgraphs > 1` 且设备为 `cuda` 时，程序会自动退回串行子图训练，但仍保留相同的训练入口与输出格式
+
+如果已经编译 `subgraph_sampler_native`，则子图采样与子图样本筛选会在 C++ 扩展层执行，这一部分可以减少 GIL 对 CPU 并行的限制；模型前向、反向传播和参数聚合仍然沿用现有的 PyTorch 训练流程。
 
 ## 七、主要参数说明
 

@@ -26,7 +26,7 @@ from contextlib import contextmanager
 # 导入我们的组件
 from end_to_end_model import HyperedgePredictionModel, HyperedgePredictionConfig, create_mock_hypergcn_args
 from sns_negative_sampler import SNSNegativeSampler, load_real_hyperedges_from_csv
-from subgraph_sampler import sample_subgraph
+from subgraph_sampler import extract_subgraph_samples, sample_subgraph
 
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_DATA_DIR = os.path.join(PROJECT_ROOT, "data")
@@ -849,32 +849,7 @@ class SubgraphHyperedgeTrainer(HyperedgeTrainer):
         Returns:
             (子图正样本, 子图负样本)
         """
-        subgraph_edges_set = set()
-        for eid, nodes in subgraph_data.items():
-            subgraph_edges_set.add(tuple(sorted(nodes)))
-        
-        # 提取属于子图的正样本
-        subgraph_positives = []
-        for edge in all_positives:
-            if tuple(sorted(edge)) in subgraph_edges_set:
-                subgraph_positives.append(edge)
-        
-        # 为子图生成负样本（简化：直接从全图负样本中筛选）
-        subgraph_negatives = []
-        for edge in all_negatives:
-            # 检查负样本的节点是否都在子图中
-            subgraph_nodes = set()
-            for nodes in subgraph_data.values():
-                subgraph_nodes.update(nodes)
-            
-            if all(node in subgraph_nodes for node in edge):
-                subgraph_negatives.append(edge)
-                
-            # 限制负样本数量，保持正负比例大致平衡
-            if len(subgraph_negatives) >= len(subgraph_positives):
-                break
-        
-        return subgraph_positives, subgraph_negatives
+        return extract_subgraph_samples(subgraph_data, all_positives, all_negatives)
     
     def fuse_model_weights(self, main_model: HyperedgePredictionModel, 
                           subgraph_models: List[HyperedgePredictionModel]) -> HyperedgePredictionModel:
