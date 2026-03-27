@@ -6,6 +6,9 @@
 import os
 import sys
 
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+DEFAULT_DATA_DIR = os.path.join(PROJECT_ROOT, "data")
+
 def test_file_structure():
     """测试文件结构是否正确"""
     print("=== 测试文件结构 ===")
@@ -28,10 +31,10 @@ def test_file_structure():
     
     # 检查数据文件
     data_files = [
-        "../hyperedges_7days_reformatted_train.csv",
-        "../hyperedges_7days_reformatted_val.csv", 
-        "../hyperedges_7days_reformatted_test.csv",
-        "../edge_size_sampler.pkl"
+        os.path.join(DEFAULT_DATA_DIR, "hyperedges_7days_reformatted_train.csv"),
+        os.path.join(DEFAULT_DATA_DIR, "hyperedges_7days_reformatted_val.csv"),
+        os.path.join(DEFAULT_DATA_DIR, "hyperedges_7days_reformatted_test.csv"),
+        os.path.join(DEFAULT_DATA_DIR, "edge_size_sampler.pkl")
     ]
     
     print(f"\n=== 检查数据文件 ===")

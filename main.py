@@ -16,17 +16,20 @@ from datetime import datetime
 from training_pipeline import HyperedgeTrainer, SubgraphHyperedgeTrainer, HyperedgePredictionConfig
 from end_to_end_model import HyperedgePredictionModel
 
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+DEFAULT_DATA_DIR = os.path.join(PROJECT_ROOT, "data")
+
 
 def main():
     """主函数"""
     parser = argparse.ArgumentParser(description="超边预测系统")
-    parser.add_argument("--train_csv", type=str, default="/mnt/workspace/推荐算法/Hypersubsample/data/hyperedges_7days_reformatted_train.csv",
+    parser.add_argument("--train_csv", type=str, default=os.path.join(DEFAULT_DATA_DIR, "hyperedges_7days_reformatted_train.csv"),
                        help="训练集CSV文件路径")
-    parser.add_argument("--val_csv", type=str, default="/mnt/workspace/推荐算法/Hypersubsample/data/hyperedges_7days_reformatted_val.csv",
+    parser.add_argument("--val_csv", type=str, default=os.path.join(DEFAULT_DATA_DIR, "hyperedges_7days_reformatted_val.csv"),
                        help="验证集CSV文件路径")
-    parser.add_argument("--test_csv", type=str, default="/mnt/workspace/推荐算法/Hypersubsample/data/hyperedges_7days_reformatted_test.csv",
+    parser.add_argument("--test_csv", type=str, default=os.path.join(DEFAULT_DATA_DIR, "hyperedges_7days_reformatted_test.csv"),
                        help="测试集CSV文件路径")
-    parser.add_argument("--size_sampler", type=str, default="/mnt/workspace/推荐算法/Hypersubsample/data/edge_size_sampler.pkl",
+    parser.add_argument("--size_sampler", type=str, default=os.path.join(DEFAULT_DATA_DIR, "edge_size_sampler.pkl"),
                        help="尺寸采样器文件路径")
     parser.add_argument("--num_users", type=int, default=82740,
                        help="用户总数")

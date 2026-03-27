@@ -10,10 +10,10 @@ import json
 import random
 from typing import List, Tuple, Set
 import os
-import sys
 
-# 添加上级目录到路径，以便导入hyperedge_sampler
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+DEFAULT_DATA_DIR = os.path.join(PROJECT_ROOT, "data")
+
 from edge_size_sampler import load_hyperedge_size_sampler
 
 
@@ -162,13 +162,13 @@ if __name__ == "__main__":
     print("=== SNS负采样器测试 ===")
     
     # 测试参数
-    size_sampler_path = "../edge_size_sampler.pkl"
+    size_sampler_path = os.path.join(DEFAULT_DATA_DIR, "edge_size_sampler.pkl")
     num_users = 1000
     num_products = 2000
     
     try:
         # 1. 加载真实超边（可选）
-        real_hyperedges_path = "../hyperedges_7days_reformatted_train.csv"
+        real_hyperedges_path = os.path.join(DEFAULT_DATA_DIR, "hyperedges_7days_reformatted_train.csv")
         if os.path.exists(real_hyperedges_path):
             real_hyperedges = load_real_hyperedges_from_csv(real_hyperedges_path)
         else:

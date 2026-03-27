@@ -28,6 +28,9 @@ from end_to_end_model import HyperedgePredictionModel, HyperedgePredictionConfig
 from sns_negative_sampler import SNSNegativeSampler, load_real_hyperedges_from_csv
 from subgraph_sampler import sample_subgraph
 
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+DEFAULT_DATA_DIR = os.path.join(PROJECT_ROOT, "data")
+
 
 class TeeOutput:
     """
@@ -705,10 +708,10 @@ if __name__ == "__main__":
         config.batch_size = 8
         
         # 数据路径
-        train_csv = "../hyperedges_7days_reformatted_train.csv"
-        val_csv = "../hyperedges_7days_reformatted_val.csv"
-        test_csv = "../hyperedges_7days_reformatted_test.csv"
-        size_sampler_path = "../edge_size_sampler.pkl"
+        train_csv = os.path.join(DEFAULT_DATA_DIR, "hyperedges_7days_reformatted_train.csv")
+        val_csv = os.path.join(DEFAULT_DATA_DIR, "hyperedges_7days_reformatted_val.csv")
+        test_csv = os.path.join(DEFAULT_DATA_DIR, "hyperedges_7days_reformatted_test.csv")
+        size_sampler_path = os.path.join(DEFAULT_DATA_DIR, "edge_size_sampler.pkl")
         
         # 检查文件是否存在
         required_files = [train_csv, val_csv, test_csv, size_sampler_path]
