@@ -52,6 +52,7 @@
 ```text
 hyperedge_prediction/
 ├── main.py
+├── parallel_subgraph_trainer.py
 ├── training_pipeline.py
 ├── end_to_end_model.py
 ├── modified_hypergcn.py
@@ -67,6 +68,9 @@ hyperedge_prediction/
 
 - `main.py`
   命令行入口，负责组织训练、测试、参数解析和输出目录管理。
+
+- `parallel_subgraph_trainer.py`
+  可选并行子图训练入口。在 `subgraph` 模式下，当并行子图数量大于 1 时使用，用于并行执行同一轮中的多个子图局部训练并完成参数聚合。
 
 - `training_pipeline.py`
   训练主流程所在文件，包括数据加载、负采样、验证、测试、日志记录以及完整图训练 / 子图训练的组织逻辑。
@@ -178,6 +182,64 @@ python main.py \
   --output_dir ./outputs
 ```
 
+### 4. GPU 训练
+
+当前入口支持通过 `--device` 显式指定运行设备，可选值为 `auto`、`cpu` 和 `cuda`。
+
+- `auto`：自动选择可用 GPU，否则退回 CPU
+- `cpu`：强制使用 CPU
+- `cuda`：强制使用 GPU；若当前环境不可用则直接报错
+
+例如，在单卡 GPU 上运行子图训练时可以写为：
+
+```bash
+python main.py \
+  --train_csv /path/to/train.csv \
+  --val_csv /path/to/val.csv \
+  --test_csv /path/to/test.csv \
+  --size_sampler /path/to/edge_size_sampler.pkl \
+  --num_users 82740 \
+  --num_products 38830 \
+  --training_strategy subgraph \
+  --T 50 \
+  --R 8 \
+  --m 200 \
+  --L 3 \
+  --sampling_strategy snowball \
+  --device cuda \
+  --output_dir ./outputs_gpu
+```
+
+### 5. 并行子图训练
+
+当前版本支持可选并行子图训练，通过 `--parallel_subgraphs` 控制同一轮中并行训练的子图数量。默认值为 `1`，即串行执行；当该值大于 `1` 时，会启用并行子图训练器。
+
+例如：
+
+```bash
+python main.py \
+  --train_csv /path/to/train.csv \
+  --val_csv /path/to/val.csv \
+  --test_csv /path/to/test.csv \
+  --size_sampler /path/to/edge_size_sampler.pkl \
+  --num_users 82740 \
+  --num_products 38830 \
+  --training_strategy subgraph \
+  --T 50 \
+  --R 8 \
+  --m 200 \
+  --L 3 \
+  --sampling_strategy snowball \
+  --device cpu \
+  --parallel_subgraphs 4 \
+  --output_dir ./outputs_parallel
+```
+
+当前实现中需要注意两点：
+
+- 并行子图训练仅在 CPU 模式下启用，原因是同一进程内多个子图模型同时占用单张 GPU 容易产生资源竞争
+- 当设置 `--parallel_subgraphs > 1` 且设备为 `cuda` 时，程序会自动退回串行子图训练，但仍保留相同的训练入口与输出格式
+
 ## 七、主要参数说明
 
 为了便于后续实验记录，这里将几个核心参数单独列出：
@@ -199,6 +261,12 @@ python main.py \
 
 - `--sampling_strategy`
   子图采样策略，目前支持 `TIHS` 和 `snowball`。
+
+- `--device`
+  运行设备选择，支持 `auto`、`cpu` 和 `cuda`。
+
+- `--parallel_subgraphs`
+  并行子图数量，仅在 `subgraph` 模式下生效。设为 `1` 时为串行训练；大于 `1` 时尝试启用 CPU 并行子图训练。
 
 - `--embedding_dim`
   节点嵌入维度。
