@@ -6,6 +6,7 @@ __pycache__/
 .mypy_cache/
 
 .vscode/
+.codex_vendor/
 
 logs/
 outputs/
@@ -15,4 +16,3 @@ outputs/
 *.png
 
 *.log
-
